@@ -8,15 +8,16 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate, FilterViewDelegate {
     var client:     YelpClient!
     var businesses = NSArray()
     var searchBar = UISearchBar()
-    var searchKeyword = "Thai"
+    var searchKeyword = "Sushi"
     var HUD = JGProgressHUD(style: JGProgressHUDStyle.Dark)
+    var fvc = FilterView()
+    var filters = NSMutableDictionary()
     
     @IBOutlet weak var table: UITableView!
-    @IBOutlet weak var nav: UINavigationItem!
     
     // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
     let yelpConsumerKey = "vxKwwcR_NMQ7WaEiQBK_CA"
@@ -39,9 +40,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         table.delegate = self
         table.dataSource = self
         table.rowHeight = UITableViewAutomaticDimension
+        table.estimatedRowHeight = 90
+        table.separatorInset = UIEdgeInsetsZero
+        table.layoutMargins = UIEdgeInsetsZero
         
-        nav.titleView = searchBar
+        navigationItem.titleView = searchBar
         searchBar.delegate = self
+        
+        fvc.delegate = self
     }
     
     func loadData() {
@@ -49,7 +55,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         client = YelpClient(consumerKey: yelpConsumerKey, consumerSecret: yelpConsumerSecret, accessToken: yelpToken, accessSecret: yelpTokenSecret)
         
-        client.searchWithTerm(searchKeyword, success: { (operation: AFHTTPRequestOperation!, response: AnyObject!) -> Void in
+        client.searchWithTerm(filters, term: searchKeyword, success: { (operation: AFHTTPRequestOperation!, response: AnyObject!) -> Void in
 //            println(response)
             var businessDictionaries = response["businesses"] as NSArray
             self.businesses = Business.businessesWithDictionaries(businessDictionaries)
@@ -68,6 +74,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCellWithIdentifier("BusinessCell") as BusinessCell
         cell.populateFields(businesses[indexPath.row] as Business)
+        cell.separatorInset = UIEdgeInsetsZero
+        cell.layoutMargins = UIEdgeInsetsZero
 
         return cell
     }
@@ -89,6 +97,23 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
         searchBar.showsCancelButton = true
+    }
+    
+    func filterView(filterView: FilterView, didChangeFilters filters: NSMutableSet) {
+        var categories = NSMutableArray()
+        for filter in filters {
+            categories.addObject(filter["value"] as String)
+        }
+        
+        self.filters["category_filter"] = categories.componentsJoinedByString(",")
+        loadData()
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        var vc = segue.destinationViewController as FilterView
+        vc.delegate = self
+        
+        super.prepareForSegue(segue, sender: sender)
     }
     
     override func didReceiveMemoryWarning() {

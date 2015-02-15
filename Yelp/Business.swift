@@ -27,7 +27,13 @@ class Business: NSObject {
         name = dictionary["name"]? as NSString
         
         var addr = (dictionary.valueForKeyPath("location.address")? as NSArray).componentsJoinedByString(", ")
-        var neig = (dictionary.valueForKeyPath("location.neighborhoods")? as NSArray).componentsJoinedByString(", ")
+//        var neig = (dictionary.valueForKeyPath("location.neighborhoods")? as NSArray).componentsJoinedByString(", ")
+        var neig = ""
+        
+        if(dictionary.valueForKeyPath("location.neighborhoods") != nil) {
+            neig = (dictionary.valueForKeyPath("location.neighborhoods")? as NSArray).componentsJoinedByString(", ")
+        }
+
         address = NSString(format: "%@, %@", addr, neig)
         
         numReviews = dictionary["review_count"]? as NSInteger
