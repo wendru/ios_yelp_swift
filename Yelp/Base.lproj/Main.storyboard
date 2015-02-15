@@ -121,6 +121,7 @@
                             </tableView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <gestureRecognizers/>
                         <constraints>
                             <constraint firstItem="Il9-VW-CS6" firstAttribute="top" secondItem="kh9-bI-dsS" secondAttribute="topMargin" id="Eqr-Tt-m3X"/>
                             <constraint firstAttribute="trailingMargin" secondItem="Il9-VW-CS6" secondAttribute="trailing" constant="-16" id="VOV-bP-s2t"/>
