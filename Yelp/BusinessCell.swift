@@ -30,8 +30,6 @@ class BusinessCell: UITableViewCell {
     
     func populateFields(business: Business) {
         name.text = business.name
-//        name.numberOfLines = 0
-//        name.sizeToFit()
         
         reviewsCount.text = NSString(format: "%d Reviews", business.numReviews)
         

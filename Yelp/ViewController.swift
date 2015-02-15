@@ -8,11 +8,15 @@
 
 import UIKit
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     var client:     YelpClient!
     var businesses = NSArray()
+    var searchBar = UISearchBar()
+    var searchKeyword = "Thai"
+    var HUD = JGProgressHUD(style: JGProgressHUDStyle.Dark)
     
     @IBOutlet weak var table: UITableView!
+    @IBOutlet weak var nav: UINavigationItem!
     
     // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
     let yelpConsumerKey = "vxKwwcR_NMQ7WaEiQBK_CA"
@@ -35,12 +39,17 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         table.delegate = self
         table.dataSource = self
         table.rowHeight = UITableViewAutomaticDimension
+        
+        nav.titleView = searchBar
+        searchBar.delegate = self
     }
     
     func loadData() {
+        HUD.showInView(self.view)
+        
         client = YelpClient(consumerKey: yelpConsumerKey, consumerSecret: yelpConsumerSecret, accessToken: yelpToken, accessSecret: yelpTokenSecret)
         
-        client.searchWithTerm("Thai", success: { (operation: AFHTTPRequestOperation!, response: AnyObject!) -> Void in
+        client.searchWithTerm(searchKeyword, success: { (operation: AFHTTPRequestOperation!, response: AnyObject!) -> Void in
 //            println(response)
             var businessDictionaries = response["businesses"] as NSArray
             self.businesses = Business.businessesWithDictionaries(businessDictionaries)
@@ -48,6 +57,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             }) { (operation: AFHTTPRequestOperation!, error: NSError!) -> Void in
                 println(error)
         }
+        
+        HUD.dismissAfterDelay(0.5, animated: true)
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -57,9 +68,17 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCellWithIdentifier("BusinessCell") as BusinessCell
         cell.populateFields(businesses[indexPath.row] as Business)
-//        cell.sizeToFit()
 
         return cell
+    }
+    
+    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+        searchKeyword = searchText
+    }
+    
+    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        loadData()
     }
     
     override func didReceiveMemoryWarning() {
